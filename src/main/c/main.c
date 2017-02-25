@@ -18,17 +18,23 @@
 
 #define NO_EVENT 0
 #define BUTTON_PRESSED 1
-#define RASPBERRYPI_ON 2
-#define RASPBERRYPI_OFF 3
+#define BUTTON_RELEASED 2
+#define RASPBERRYPI_ON 3
+#define RASPBERRYPI_OFF 4
 
 #define STATE_OFF 0
 #define STATE_ON 1
 #define STATE_BOOTING 2
 #define STATE_SHUTDOWN 3
 
+#define INTERVAL_NONE 0
+#define INTERVAL_MEDIUM 1
+#define INTERVAL_LONG 2
+
 static volatile uint8_t portBHistory = 0x00;
 static char event = NO_EVENT;
 static char state = STATE_OFF;
+static char interval = 0;
 
 /*
  * TIMER0-interrupt - used for "wait_n_seconds"-functionality
@@ -52,6 +58,8 @@ ISR(PCINT0_vect) {
 
 		if (is_bit_low(currentPortB, BUTTON_PIN)) {
 			event = BUTTON_PRESSED;
+		} else {
+			event = BUTTON_RELEASED;
 		}
 
 	}
@@ -76,7 +84,7 @@ static char go_asleep() {
 	if (event != NO_EVENT) {
 		char result = event;
 		event = NO_EVENT;
-		return event;
+		return result;
 	}
 
 	/*
@@ -135,7 +143,6 @@ void boot() {
 void handle_raspberryPiOn() {
 
 	state = STATE_ON;
-	// if raspberry is running event if
 	set_bit(PORTB, LED_PIN);
 	printf("On\n");
 
@@ -150,33 +157,13 @@ void handle_raspberryPiOff() {
 	printf("Off\n");
 }
 
-void handle_buttonPressedLong() {
+void handle_buttonReleased() {
 
-	// ignore short button activity
-	if (is_bit_high(PINB, BUTTON_PIN)) {
-		printf("Short\n");
-		return;
-	}
+	reset_timer();
 
-	printf("Long\n");
-	handle_raspberryPiOff();
+	if (interval == INTERVAL_MEDIUM) {
 
-}
-
-void handle_buttonPressed() {
-
-	// ignore short button activity
-	if (is_bit_high(PINB, BUTTON_PIN)) {
-		printf("Short\n");
-		return;
-	}
-
-	if (state != STATE_OFF) {
-		printf("Running\n");
-		// wait 4.5 seconds for immediate shutdown
-		wait_n_seconds(4.5, handle_buttonPressedLong);
-
-		if (is_bit_low(PINB, SHUTDOWN_PIN)) {
+		if (state != STATE_OFF) {
 
 			printf("Shutdown\n");
 			state = STATE_SHUTDOWN;
@@ -184,16 +171,37 @@ void handle_buttonPressed() {
 
 		}
 
+	}
+
+	interval = INTERVAL_NONE;
+
+}
+void handle_buttonPressedLong() {
+
+	interval = INTERVAL_NONE;
+
+	handle_raspberryPiOff();
+
+}
+
+void handle_buttonPressed() {
+
+	// ignore short button activity
+
+	if (state != STATE_OFF) {
+
+		interval = INTERVAL_MEDIUM;
+		printf("Wait for long-button event\n");
+		// wait 4.5 seconds for immediate shutdown
+		wait_n_seconds(4.5, handle_buttonPressedLong);
+
 	} else {
 
-		if (is_bit_low(PINB, RASPBERRYPI_OFF_PIN)) {
-
-			printf("Booting\n");
-			state = STATE_BOOTING;
-			set_bit(PORTB, ATX_PIN);
-			set_bit(PORTB, LED_PIN);
-
-		}
+		interval = INTERVAL_NONE;
+		printf("Booting\n");
+		state = STATE_BOOTING;
+		set_bit(PORTB, LED_PIN);
+		set_bit(PORTB, ATX_PIN);
 
 	}
 
@@ -213,7 +221,12 @@ int main() {
 		switch (wakeUpEvent) {
 
 		case BUTTON_PRESSED:                          // handle "button pressed"-event
+			interval = INTERVAL_NONE;
 			wait_n_seconds(0.5, handle_buttonPressed);// ignore short button activity
+			break;
+
+		case BUTTON_RELEASED:                         // handle "button released"-event
+			handle_buttonReleased();
 			break;
 
 		case RASPBERRYPI_ON:                          // handle "RaspberryPi on"-event

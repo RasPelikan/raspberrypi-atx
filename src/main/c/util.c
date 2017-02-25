@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 #include "util.h"
 
-static timer_command command;                         // command executed after n seconds
+static volatile timer_command command;                // command executed after n seconds
 static int number_of_interrupts;                      // number of interrupts necessary to wait n seconds
 
 /*
@@ -11,7 +11,7 @@ static int number_of_interrupts;                      // number of interrupts ne
  */
 void reset_timer() {
 
-	TIMSK0 &= ~(_BV(TOIE0));                          // disable timer
+	clear_bit(TIMSK0, OCIE0A);                        // disable timer interrupt
 	command = NULL;                                   // delete command store to be executed after timeout
 
 }
