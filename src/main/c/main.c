@@ -48,11 +48,6 @@ ISR(PCINT0_vect) {
 	uint8_t changedBits = currentPortB ^ portBHistory;
 	portBHistory = currentPortB;
 
-
-	if (event != NO_EVENT) {
-		return;
-	}
-
 	if (is_bit_high(changedBits, BUTTON_PIN)) {
 
 		if (is_bit_low(currentPortB, BUTTON_PIN)) {
@@ -79,6 +74,8 @@ ISR(PCINT0_vect) {
 static char go_asleep() {
 
 	if (event != NO_EVENT) {
+		char result = event;
+		event = NO_EVENT;
 		return event;
 	}
 
@@ -121,7 +118,7 @@ void boot() {
 	set_bit(portBHistory, BUTTON_PIN);                // used for detecting pin change events
 
 	clear_bit(DDRB, RASPBERRYPI_OFF_PIN);             // configure RASPBERRYPI_OFF_PIN for input
-	clear_bit(PORTB, RASPBERRYPI_OFF_PIN);            // pull-down enabled
+	clear_bit(PORTB, RASPBERRYPI_OFF_PIN);            // pull-up disabled
 
 	set_bit(DDRB, SHUTDOWN_PIN);                      // configure SHUTDOWN_PIN for output
 	clear_bit(PORTB, SHUTDOWN_PIN);                   // no shutdown
@@ -138,6 +135,8 @@ void boot() {
 void handle_raspberryPiOn() {
 
 	state = STATE_ON;
+	// if raspberry is running event if
+	set_bit(PORTB, LED_PIN);
 	printf("On\n");
 
 }
@@ -147,6 +146,7 @@ void handle_raspberryPiOff() {
 	state = STATE_OFF;
 	clear_bit(PORTB, ATX_PIN);
 	clear_bit(PORTB, LED_PIN);
+	clear_bit(PORTB, SHUTDOWN_PIN);
 	printf("Off\n");
 }
 
@@ -176,15 +176,17 @@ void handle_buttonPressed() {
 		// wait 4.5 seconds for immediate shutdown
 		wait_n_seconds(4.5, handle_buttonPressedLong);
 
-	} else {
-
-		if (is_bit_high(PINB, RASPBERRYPI_OFF_PIN)) {
+		if (is_bit_low(PINB, SHUTDOWN_PIN)) {
 
 			printf("Shutdown\n");
 			state = STATE_SHUTDOWN;
 			set_bit(PORTB, SHUTDOWN_PIN);
 
-		} else {
+		}
+
+	} else {
+
+		if (is_bit_low(PINB, RASPBERRYPI_OFF_PIN)) {
 
 			printf("Booting\n");
 			state = STATE_BOOTING;
