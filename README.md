@@ -10,9 +10,24 @@ If the RaspberryPi is running an the button is pressed for more than 5 seconds t
 
 ## PCB 
 
+### Hints
+
 I used a simple [RC filter](http://hackaday.com/2015/12/09/embed-with-elliot-debounce-your-noisy-buttons-part-i/) for button debouncing. This is sufficient because the MCU is running at a low frequency (128kHz). Additionally I removed the 10k resistor which is replaced by the MCU's pull-up resistor.   
 
 For some ATX power supplies it is necessary to provide a base load. Everything is fine if your ATX wants this load on the 5V line because the RaspberryPi is the load. My ATX wants the load on the 3.3V line, so I had to add a [22 Ohm ceramic 5W resistor](https://www.conrad.at/de/hochlast-widerstand-22-axial-bedrahtet-5-w-vitrohm-kh208-810b22r-1-st-428304.html) which builds a load of 150mA. There is a place for this resistor on the PCB.
+
+### ATX lines
+
+The pinout of my ATX power supply is the "MDD PS" mentioned on [this](http://www.xlr8yourmac.com/tips/MDD_ps_mods/MDD_PS_Mods.html) page.
+
+* *black:* GND - connect this to the PCB and the RaspberryPi
+* *red:* 5V+ - connect this to the RaspberryPi
+* *orange:* 3.3V+
+* *yellow:* 12V
+* *green:* power on - connect this to the PCB
+* *purple:* 5V+ standby - connect this to the PCB
+
+Use different ground lines for the PCB, the RaspberryPi and for other consumers connected to the ATX power supply. This is necessary to distribute the load to several lines to prevent cable damages. The RaspberryPi and the PCB do not consume so much current for warranting this but you may connect other consumers (otherwise it would be an overkill to run a RaspberryPi by an ATX power supply).
 
 ## Installing the software
 
