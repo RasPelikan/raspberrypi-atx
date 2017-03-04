@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "util.h"
-#include "uart.h"
 
 #define ATX_PIN PB0
 #define BUTTON_PIN PB1
@@ -90,7 +89,7 @@ static char go_asleep() {
 	/*
 	 * initialize "wake up on pin-change" used for "button"- and "Raspberry Pi off"-events
 	 */
-	set_bit(PCICR, PCIE0);                            // enable pin change interrupt
+	set_bit(GIMSK, PCIE);                             // enable pin change interrupt
 	sei();                                            // enable interrupt since this method might
 	                                                  // be called within an interrupt and if so the
 	                                                  // PCINT0-interrupt won't fire
@@ -109,12 +108,6 @@ static char go_asleep() {
  */
 void boot() {
 
-	// uart
-	cli();
-	uart_init();
-	stdout = &uart_output;
-	stdin  = &uart_input;
-
 	set_bit(DDRB, ATX_PIN);                           // ATX_PIN for output
 	clear_bit(PORTB, ATX_PIN);                        // disable power on ATX_PIN
 
@@ -132,11 +125,8 @@ void boot() {
 	clear_bit(PORTB, SHUTDOWN_PIN);                   // no shutdown
 
 	// enable bit change interrupt
-	set_bit(PCMSK0, BUTTON_INTERRUPT);                // for BUTTON_PIN
-	set_bit(PCMSK0, RASPBERRYPI_OFF_INTERRUPT);       // and RASPBERRYPI_OFF_PIN
-
-	sei();                                            // enable global interrupts
-	printf("Initialized\n");
+	set_bit(PCMSK, BUTTON_INTERRUPT);                 // for BUTTON_PIN
+	set_bit(PCMSK, RASPBERRYPI_OFF_INTERRUPT);        // and RASPBERRYPI_OFF_PIN
 
 }
 
@@ -144,7 +134,6 @@ void handle_raspberryPiOn() {
 
 	state = STATE_ON;
 	set_bit(PORTB, LED_PIN);
-	printf("On\n");
 
 }
 
@@ -154,7 +143,7 @@ void handle_raspberryPiOff() {
 	clear_bit(PORTB, ATX_PIN);
 	clear_bit(PORTB, LED_PIN);
 	clear_bit(PORTB, SHUTDOWN_PIN);
-	printf("Off\n");
+
 }
 
 void handle_buttonReleased() {
@@ -165,7 +154,6 @@ void handle_buttonReleased() {
 
 		if (state != STATE_OFF) {
 
-			printf("Shutdown\n");
 			state = STATE_SHUTDOWN;
 			set_bit(PORTB, SHUTDOWN_PIN);
 
@@ -191,14 +179,12 @@ void handle_buttonPressed() {
 	if (state != STATE_OFF) {
 
 		interval = INTERVAL_MEDIUM;
-		printf("Wait for long-button event\n");
 		// wait 4.5 seconds for immediate shutdown
 		wait_n_seconds(4.5, handle_buttonPressedLong);
 
 	} else {
 
 		interval = INTERVAL_NONE;
-		printf("Booting\n");
 		state = STATE_BOOTING;
 		set_bit(PORTB, LED_PIN);
 		set_bit(PORTB, ATX_PIN);
@@ -234,7 +220,8 @@ int main() {
 			break;
 
 		case RASPBERRYPI_OFF:                         // handle "RaspberryPi off"-event
-			handle_raspberryPiOff();
+			// shut down power after a short while
+			wait_n_seconds(0.5, handle_raspberryPiOff);
 			break;
 
 		}

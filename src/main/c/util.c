@@ -11,7 +11,7 @@ static int number_of_interrupts;                      // number of interrupts ne
  */
 void reset_timer() {
 
-	clear_bit(TIMSK0, OCIE0A);                        // disable timer interrupt
+	clear_bit(TIMSK, OCIE0A);                         // disable timer interrupt
 	command = NULL;                                   // delete command store to be executed after timeout
 
 }
@@ -47,7 +47,7 @@ void wait_n_seconds(float seconds, timer_command cmd) {
 	TCNT0 = 0;                                        // start at counter 0
 	TCCR0A |= _BV(WGM01);                             // compare-match mode
 	TCCR0B |= _BV(CS00) | _BV(CS02);                  // prescaler 1024
-	TIMSK0 |= _BV(OCIE0A);                            // use OCR0A for a compare-match
+	TIMSK |= _BV(OCIE0A);                             // use OCR0A for a compare-match
 
 }
 

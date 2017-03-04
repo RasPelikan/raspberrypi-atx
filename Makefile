@@ -26,9 +26,9 @@ OBJCOPY         := $(GNU_PREFIX)-objcopy
 SIZE            := $(GNU_PREFIX)-size
 AVRDUDE			:= avrdude
 
-MCU		:= atmega328p
+MCU		:= attiny45
 CLOCK_SPEED	:= 8000000UL
-AVRDUDE_MCU	:= m328p
+AVRDUDE_MCU	:= t45
 AVRDUDE_PROGRAMMER	:= usbasp
 
 #function for removing duplicates in a list
@@ -37,8 +37,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 #source common to all targets
 C_SOURCE_FILES += \
 $(abspath src/main/c/main.c) \
-$(abspath src/main/c/util.c) \
-$(abspath src/main/c/uart.c)
+$(abspath src/main/c/util.c)
 
 #includes common to all targets
 INC_PATHS = -I$(abspath ./src/main/c)
@@ -103,6 +102,14 @@ $(OUTPUT_BINARY_DIRECTORY)/$(PROJECT_NAME).hex: $(OUTPUT_BINARY_DIRECTORY)/$(PRO
 deploy: $(OUTPUT_BINARY_DIRECTORY)/$(PROJECT_NAME).hex
 	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Uflash:w:$(OUTPUT_BINARY_DIRECTORY)/$(PROJECT_NAME).hex
 	
+readfuses:
+	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER)
+	
+writefuses:
+	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Ulfuse:w:0xE2:m
+	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Uhfuse:w:0xDF:m
+	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Uefuse:w:0xFF:m
+
 clean:
 	$(RM) $(BUILD_DIRECTORIES)
 
