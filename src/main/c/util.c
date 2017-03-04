@@ -43,10 +43,10 @@ void wait_n_seconds(float seconds, timer_command cmd) {
 	number_of_interrupts = seconds * 31;
 
 	// enable timer
-	OCR0A = 252;                                      // 31 times of compare matches at 252 is 1 second
+	OCR0A = 80;                                       // 25 times of compare matches at 80 is 1 second
 	TCNT0 = 0;                                        // start at counter 0
 	TCCR0A |= _BV(WGM01);                             // compare-match mode
-	TCCR0B |= _BV(CS00) | _BV(CS02);                  // prescaler 1024
+	TCCR0B |= _BV(CS00) | _BV(CS01);                  // prescaler 64
 	TIMSK |= _BV(OCIE0A);                             // use OCR0A for a compare-match
 
 }

@@ -27,7 +27,7 @@ SIZE            := $(GNU_PREFIX)-size
 AVRDUDE			:= avrdude
 
 MCU		:= attiny45
-CLOCK_SPEED	:= 8000000UL
+CLOCK_SPEED	:= 128000UL
 AVRDUDE_MCU	:= t45
 AVRDUDE_PROGRAMMER	:= usbasp
 
@@ -106,7 +106,7 @@ readfuses:
 	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER)
 	
 writefuses:
-	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Ulfuse:w:0xE2:m
+	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Ulfuse:w:0xE4:m
 	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Uhfuse:w:0xDF:m
 	$(AVRDUDE) -p$(AVRDUDE_MCU) -c$(AVRDUDE_PROGRAMMER) -Uefuse:w:0xFF:m
 
