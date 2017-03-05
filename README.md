@@ -9,6 +9,7 @@ It is supposed to use a LED button as the main switch. Once the button is presse
 If the RaspberryPi is running an the button is pressed for more than 5 seconds then the ATX power supply is turned off immediately. *Don't use this feature during SD card activity because it may break your SD card!* 
 
 See the breadboard version in action: https://youtu.be/JrYkC-bjguw
+
 [![the breadboard version](https://raw.githubusercontent.com/RasPelikan/raspberrypi-atx/gh-pages/ATX_Image_Thumbnail.jpg)](https://raw.githubusercontent.com/RasPelikan/raspberrypi-atx/gh-pages/ATX_Image.jpg)
 
 ## PCB 
