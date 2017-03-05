@@ -4,7 +4,7 @@ RaspberryPi ATX power supply controlled by an ATtiny45.
 
 ## Description
 
-It is supposed to use a LED button. Once the button is pressed for more than 0.5 seconds the ATX power supply is turned on by the MCU, which is indicated by the button's LED, and the RaspberryPi (which is connect to a non-standby 5V line - see [http://reprap.org/wiki/PC_Power_Supply](http://reprap.org/wiki/PC_Power_Supply)) will start booting. In the end of the startup sequence a tiny Python script is started which sets a certain GPIO-pin to "high" to tell the MCU that the RaspberryPi is running. Afterwards the script is waiting for on another GPIO-pin for the signal to shut down which is sent by the MCU once the button is pressed again for more than 0.5 seconds. If so the Python script calls "poweroff" which shuts down the RaspberryPi. At the end of shutting down the "running" indicator GPIO-pin goes to "low" what is recognized by the MCU which turns off the ATX power supply after 0.5 seconds (to be sure it is safe to power off).
+It is supposed to use a LED button as the main switch. Once the button is pressed for more than 0.5 seconds the ATX power supply is turned on by the MCU, which is indicated by the button's LED, and the RaspberryPi (which is connect to a non-standby 5V line - see [http://reprap.org/wiki/PC_Power_Supply](http://reprap.org/wiki/PC_Power_Supply)) will start booting. In the end of the startup sequence a tiny Python script is started which sets a certain GPIO-pin to "high" to tell the MCU that the RaspberryPi is running. Afterwards the script is waiting for on another GPIO-pin for the signal to shut down which is sent by the MCU once the button is pressed again for more than 0.5 seconds. If so the Python script calls "poweroff" which shuts down the RaspberryPi. At the end of shutting down the "running" indicator GPIO-pin goes to "low" what is recognized by the MCU which turns off the ATX power supply after 0.5 seconds (to be sure it is safe to power off).
 
 If the RaspberryPi is running an the button is pressed for more than 5 seconds then the ATX power supply is turned off immediately. *Don't use this feature during SD card activity because it may break your SD card!* 
 
@@ -23,7 +23,7 @@ The pinout of my ATX power supply is the "MDD PS" mentioned on [this](http://www
 * *black:* GND - connect this to the PCB and the RaspberryPi
 * *red:* 5V+ - connect this to the RaspberryPi
 * *orange:* 3.3V+
-* *yellow:* 12V
+* *yellow:* 12V+
 * *green:* power on - connect this to the PCB
 * *purple:* 5V+ standby - connect this to the PCB
 
