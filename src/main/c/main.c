@@ -200,7 +200,14 @@ int main() {
 
 	boot();                                           // configure MCU
 
-	while(1) {                                        // main loop
+	for (int i = 0; i < 5; ++i) {                     // blink for a second
+		set_bit(PORTB, LED_PIN);                  // to indicate boot
+		_delay_ms(100);
+		clear_bit(PORTB, LED_PIN);
+		_delay_ms(100);
+	}
+
+	while(1) {                                            // main loop
 
 		char wakeUpEvent = go_asleep();               // sleep until an event occurs
 
